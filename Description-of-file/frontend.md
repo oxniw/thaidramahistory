@@ -1,7 +1,7 @@
 # Description: frontend.md
 
 ## Overview
-Documents the client-side user interface components (`static/index.html`, `static/styles.css`, and `static/app.js`). Implements the high-contrast monochrome brutalist notice board displaying notices from MongoDB with keyword search, category filtering, and safe DOM rendering.
+Documents the client-side user interface components (`static/index.html`, `static/styles.css`, and `static/app.js`). Implements the high-contrast monochrome brutalist Thaidramahistory archive board displaying notices from MongoDB with keyword search, category filtering, and safe DOM rendering.
 
 ## Exports & Functions (app.js)
 - `state`: Local state container tracking notices, active filter, and search query.

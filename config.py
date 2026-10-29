@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    APP_NAME: str = "Monochrome Notice Board"
+    APP_NAME: str = "Thaidramahistory"
     PORT: int = Field(default=8000, alias="PORT")
     HOST: str = "0.0.0.0"
 

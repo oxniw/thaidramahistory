@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: monochrome-notice-board
+    name: thaidramahistory
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt"

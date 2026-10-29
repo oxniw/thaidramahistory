@@ -1,6 +1,6 @@
-# Monochrome Notice Board
+# Thaidramahistory
 
-A minimalist, high-contrast monochrome notice and bulletin board web application built with Python FastAPI and MongoDB, styled with a brutalist black-and-white theme and configured for deployment on [Render.com](https://render.com).
+A minimalist, high-contrast monochrome bulletin web application built with Python FastAPI and MongoDB, styled with a brutalist black-and-white theme and configured for deployment on [Render.com](https://render.com).
 
 ---
 
@@ -104,7 +104,7 @@ The test runner validates:
 1. Push this repository to GitHub or GitLab:
    ```bash
    git add .
-   git commit -m "Deploy read-only notice board"
+   git commit -m "Deploy read-only Thaidramahistory"
    git remote add origin <your-repo-url>
    git push -u origin main
    ```

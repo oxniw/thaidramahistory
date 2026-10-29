@@ -1,7 +1,7 @@
 # Description: notice_router.md
 
 ## Overview
-Declares public read-only HTTP route definitions for the Notice Board REST API.
+Declares public read-only HTTP route definitions for the Thaidramahistory REST API.
 
 ## Exports & Functions
 - `router: APIRouter`: Configured FastAPI router under prefix `/api`.

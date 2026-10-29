@@ -11,7 +11,7 @@ from main import app
 def run_all_tests():
     """Run sequential integration checks across all routes and security gates."""
     print("==================================================")
-    print("STARTING READ-ONLY NOTICE BOARD TEST SUITE")
+    print("STARTING READ-ONLY THAIDRAMAHISTORY TEST SUITE")
     print("==================================================")
 
     with TestClient(app) as client:
@@ -26,7 +26,7 @@ def run_all_tests():
         print("[2/5] Testing static file serving...")
         root_res = client.get("/")
         assert root_res.status_code == 200, "Root path failed to serve index.html"
-        assert "NOTICE BOARD" in root_res.text
+        assert "THAIDRAMAHISTORY" in root_res.text
         assert client.get("/static/styles.css").status_code == 200
         assert client.get("/static/app.js").status_code == 200
         print("  OK - Frontend HTML, CSS, and JS assets served correctly.")

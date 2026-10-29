@@ -1,6 +1,6 @@
 // ==============================================================================
 // File: .//Description-of-file/frontend.md
-// Overview: Read-only notice board client with safe DOM rendering and filtering
+// Overview: Read-only Thaidramahistory client with safe DOM rendering and filtering
 // ==============================================================================
 
 (function () {
