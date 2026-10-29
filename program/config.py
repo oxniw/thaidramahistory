@@ -23,7 +23,11 @@ class ProgramSettings(BaseSettings):
     APP_NAME: str = "Thaidramahistory Database Manager"
     # Strict localhost lockdown: cannot be accessed across local network
     HOST: str = "127.0.0.1"
-    PORT: int = 8500
+    PORT: int = Field(
+        default=8500,
+        validation_alias="MANAGER_PORT",
+        description="Dedicated manager port, separated from public website PORT in .env",
+    )
 
     # MongoDB connection details
     MONGODB_URI: str = Field(
