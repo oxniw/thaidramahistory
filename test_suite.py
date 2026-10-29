@@ -1,30 +1,29 @@
 # ==============================================================================
 # File: .//Description-of-file/test_suite.md
-# Overview: Automated integration and unit test suite verifying endpoints and CRUD.
+# Overview: Automated integration and unit test suite verifying read-only board.
 # ==============================================================================
 
 import sys
 from fastapi.testclient import TestClient
 from main import app
-from config import settings
 
 
 def run_all_tests():
     """Run sequential integration checks across all routes and security gates."""
     print("==================================================")
-    print("STARTING NOTICE BOARD TEST SUITE")
+    print("STARTING READ-ONLY NOTICE BOARD TEST SUITE")
     print("==================================================")
 
     with TestClient(app) as client:
-        # 1. Health Probe
-        print("[1/6] Testing GET /health...")
+        # 1. Health Probe (without leaking internal server environment)
+        print("[1/5] Testing GET /health...")
         health_res = client.get("/health")
         assert health_res.status_code == 200, f"Health probe failed: {health_res.text}"
-        assert health_res.json()["status"] == "ok"
-        print("  OK - Health probe returned 200 with status 'ok'.")
+        assert health_res.json() == {"status": "ok"}
+        print("  OK - Health probe returned 200 without exposing server metadata.")
 
         # 2. Static Asset Delivery
-        print("[2/6] Testing static file serving...")
+        print("[2/5] Testing static file serving...")
         root_res = client.get("/")
         assert root_res.status_code == 200, "Root path failed to serve index.html"
         assert "NOTICE BOARD" in root_res.text
@@ -33,82 +32,47 @@ def run_all_tests():
         print("  OK - Frontend HTML, CSS, and JS assets served correctly.")
 
         # 3. List Notices & Filters
-        print("[3/6] Testing GET /api/notices...")
+        print("[3/5] Testing GET /api/notices...")
         notices_res = client.get("/api/notices")
         assert notices_res.status_code == 200
         notices = notices_res.json()
-        assert len(notices) >= 5, f"Expected at least 5 seed notices, found {len(notices)}"
+        assert len(notices) >= 5, f"Expected at least 5 notices, found {len(notices)}"
 
         # Test Search Filter
         search_res = client.get("/api/notices?search=Broadcast")
         assert search_res.status_code == 200
         assert len(search_res.json()) >= 1
-        print("  OK - Public notice listing and keyword filtering working.")
 
-        # 4. Admin Security Verification
-        print("[4/6] Testing Admin Authorization Gates...")
-        # Missing key should return 401
-        res_missing = client.post("/api/notices", json={"title": "Hack", "content": "Test"})
-        assert res_missing.status_code == 401, f"Expected 401 for missing key, got {res_missing.status_code}"
+        # Test Priority Filter
+        urgent_res = client.get("/api/notices?priority=urgent")
+        assert urgent_res.status_code == 200
+        for item in urgent_res.json():
+            assert item["priority"] == "urgent"
+        print("  OK - Public notice listing and keyword/priority filtering verified.")
 
-        # Wrong key should return 403
-        res_wrong = client.post(
-            "/api/notices",
-            headers={"X-Admin-Key": "invalid-passkey"},
-            json={"title": "Hack", "content": "Test"},
-        )
-        assert res_wrong.status_code == 403, f"Expected 403 for wrong key, got {res_wrong.status_code}"
+        # 4. Single Notice Retrieval
+        print("[4/5] Testing GET /api/notices/{id}...")
+        first_notice_id = notices[0]["id"]
+        single_res = client.get(f"/api/notices/{first_notice_id}")
+        assert single_res.status_code == 200
+        assert single_res.json()["id"] == first_notice_id
 
-        # Verify endpoint check
-        verify_ok = client.get("/api/auth/verify", headers={"X-Admin-Key": settings.ADMIN_API_KEY})
-        assert verify_ok.status_code == 200
-        print("  OK - Unauthorized requests blocked (401/403); valid passkey accepted.")
+        # 404 on non-existent notice
+        not_found_res = client.get("/api/notices/nonexistent123456789012")
+        assert not_found_res.status_code == 404
+        print("  OK - Single notice retrieval and 404 handling verified.")
 
-        # 5. Create Notice (POST)
-        print("[5/6] Testing Notice Creation (POST /api/notices)...")
-        new_payload = {
-            "title": "Integration Test Notice",
-            "content": "This notice was generated automatically by the test suite.",
-            "category": "Testing",
-            "priority": "urgent",
-            "is_pinned": True,
-            "author": "Automated Tester",
-        }
-        create_res = client.post(
-            "/api/notices",
-            headers={"X-Admin-Key": settings.ADMIN_API_KEY},
-            json=new_payload,
-        )
-        assert create_res.status_code == 201, f"Create notice failed: {create_res.text}"
-        created_data = create_res.json()
-        notice_id = created_data["id"]
-        assert created_data["title"] == new_payload["title"]
-        assert created_data["is_pinned"] is True
-        print(f"  OK - Created notice with ID: {notice_id}")
+        # 5. Security: Verify No Mutation Endpoints Exist (No Server Manipulation)
+        print("[5/5] Testing that mutating endpoints are disabled (405 Method Not Allowed)...")
+        post_attempt = client.post("/api/notices", json={"title": "Test", "content": "Test"})
+        assert post_attempt.status_code == 405, f"Expected 405, got {post_attempt.status_code}"
 
-        # 6. Update (PUT) and Delete (DELETE)
-        print("[6/6] Testing Notice Update & Deletion...")
-        # Update
-        update_res = client.put(
-            f"/api/notices/{notice_id}",
-            headers={"X-Admin-Key": settings.ADMIN_API_KEY},
-            json={"title": "Updated Test Notice", "is_pinned": False},
-        )
-        assert update_res.status_code == 200
-        assert update_res.json()["title"] == "Updated Test Notice"
-        assert update_res.json()["is_pinned"] is False
+        put_attempt = client.put(f"/api/notices/{first_notice_id}", json={"title": "Test"})
+        assert put_attempt.status_code == 405, f"Expected 405, got {put_attempt.status_code}"
 
-        # Delete
-        delete_res = client.delete(
-            f"/api/notices/{notice_id}",
-            headers={"X-Admin-Key": settings.ADMIN_API_KEY},
-        )
-        assert delete_res.status_code == 200
-
-        # Verify deletion returns 404
-        get_deleted = client.get(f"/api/notices/{notice_id}")
-        assert get_deleted.status_code == 404
-        print("  OK - Update and delete operations completed and verified.")
+        delete_attempt = client.delete(f"/api/notices/{first_notice_id}")
+        assert delete_attempt.status_code == 405, f"Expected 405, got {delete_attempt.status_code}"
+        print("  OK - All mutation routes are disabled (HTTP 405). Server cannot be manipulated.")
 
     print("==================================================")
     print("ALL TESTS PASSED SUCCESSFULLY!")

@@ -56,7 +56,7 @@ async def apply_security_headers(request: Request, call_next):
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health status probe for deployment monitors."""
-    return {"status": "ok", "app": settings.APP_NAME, "env": settings.APP_ENV}
+    return {"status": "ok"}
 
 
 # Register Notice API routes
@@ -81,5 +81,4 @@ if __name__ == "__main__":
         "main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.APP_ENV == "development",
     )

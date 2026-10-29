@@ -1,6 +1,6 @@
 # ==============================================================================
 # File: .//Description-of-file/notice_repository.md
-# Overview: Encapsulates MongoDB database operations behind a repository seam.
+# Overview: Encapsulates MongoDB database read operations behind a repository seam.
 # ==============================================================================
 
 import json
@@ -73,7 +73,6 @@ async def list_notices(
                 n for n in results
                 if s in n.get("title", "").lower() or s in n.get("content", "").lower() or s in n.get("author", "").lower()
             ]
-        # Sort pinned first, then newest
         results.sort(key=lambda x: (not x.get("is_pinned", False), x.get("created_at")), reverse=False)
         return results
 
@@ -87,7 +86,6 @@ async def list_notices(
         query["priority"] = priority
 
     if search:
-        # Safe escaped regex search across title and content
         escaped_search = re.escape(search.strip())
         query["$or"] = [
             {"title": {"$regex": escaped_search, "$options": "i"}},
@@ -118,71 +116,3 @@ async def get_notice_by_id(notice_id: str) -> Optional[Dict[str, Any]]:
     collection = get_collection()
     doc = await collection.find_one({"_id": oid})
     return _serialize_document(doc)
-
-
-async def insert_notice(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Insert notice into MongoDB or local store with created_at and updated_at timestamps."""
-    now = datetime.now(timezone.utc)
-    doc_to_insert = dict(data)
-    doc_to_insert["created_at"] = now
-    doc_to_insert["updated_at"] = now
-
-    if not is_mongo_connected():
-        _init_local_store()
-        doc_to_insert["id"] = uuid.uuid4().hex[:24]
-        _local_store.insert(0, doc_to_insert)
-        return dict(doc_to_insert)
-
-    collection = get_collection()
-    result = await collection.insert_one(doc_to_insert)
-    doc_to_insert["_id"] = result.inserted_id
-    return _serialize_document(doc_to_insert)  # type: ignore
-
-
-async def update_notice_by_id(notice_id: str, fields: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """Update fields on existing notice and update timestamp."""
-    now = datetime.now(timezone.utc)
-    if not is_mongo_connected():
-        _init_local_store()
-        for idx, doc in enumerate(_local_store):
-            if doc.get("id") == notice_id:
-                updated = dict(doc)
-                updated.update(fields)
-                updated["updated_at"] = now
-                _local_store[idx] = updated
-                return dict(updated)
-        return None
-
-    try:
-        oid = ObjectId(notice_id)
-    except (InvalidId, TypeError):
-        return None
-
-    collection = get_collection()
-    update_data = dict(fields)
-    update_data["updated_at"] = now
-
-    updated_doc = await collection.find_one_and_update(
-        {"_id": oid},
-        {"$set": update_data},
-        return_document=True,
-    )
-    return _serialize_document(updated_doc)
-
-
-async def delete_notice_by_id(notice_id: str) -> bool:
-    """Delete document by ObjectId or local id."""
-    if not is_mongo_connected():
-        _init_local_store()
-        initial_len = len(_local_store)
-        _local_store[:] = [n for n in _local_store if n.get("id") != notice_id]
-        return len(_local_store) < initial_len
-
-    try:
-        oid = ObjectId(notice_id)
-    except (InvalidId, TypeError):
-        return False
-
-    collection = get_collection()
-    result = await collection.delete_one({"_id": oid})
-    return result.deleted_count > 0

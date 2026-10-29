@@ -1,6 +1,6 @@
 // ==============================================================================
 // File: .//Description-of-file/frontend.md
-// Overview: Client-side notice board controller with safe DOM rendering & admin flow
+// Overview: Read-only notice board client with safe DOM rendering and filtering
 // ==============================================================================
 
 (function () {
@@ -11,9 +11,6 @@
     notices: [],
     filter: "all",
     search: "",
-    adminKey: localStorage.getItem("bulletin_admin_key") || "",
-    isAdmin: false,
-    editingNoticeId: null,
   };
 
   // DOM Elements
@@ -22,50 +19,13 @@
   const searchInput = document.getElementById("search-input");
   const searchClearBtn = document.getElementById("search-clear-btn");
   const filterTabs = document.getElementById("filter-tabs");
-  const adminToggleBtn = document.getElementById("admin-toggle-btn");
-  const adminStatusText = document.getElementById("admin-status-text");
-  const createNoticeBtn = document.getElementById("create-notice-btn");
-  const emptyCreateBtn = document.getElementById("empty-create-btn");
-  const toast = document.getElementById("toast");
-
-  // Admin Modal Elements
-  const adminModal = document.getElementById("admin-modal");
-  const adminModalClose = document.getElementById("admin-modal-close");
-  const adminKeyInput = document.getElementById("admin-key-input");
-  const adminSubmitBtn = document.getElementById("admin-submit-btn");
-  const adminLogoutBtn = document.getElementById("admin-logout-btn");
-
-  // Notice Form Modal Elements
-  const noticeModal = document.getElementById("notice-modal");
-  const noticeModalClose = document.getElementById("notice-modal-close");
-  const noticeModalTitle = document.getElementById("notice-modal-title");
-  const noticeForm = document.getElementById("notice-form");
-  const noticeIdInput = document.getElementById("notice-id");
-  const noticeTitleInput = document.getElementById("notice-title");
-  const noticeCategoryInput = document.getElementById("notice-category");
-  const noticePriorityInput = document.getElementById("notice-priority");
-  const noticeAuthorInput = document.getElementById("notice-author");
-  const noticePinnedInput = document.getElementById("notice-pinned");
-  const noticeContentInput = document.getElementById("notice-content");
-  const noticeCancelBtn = document.getElementById("notice-cancel-btn");
 
   // Counters
   const countAll = document.getElementById("count-all");
   const countPinned = document.getElementById("count-pinned");
   const countUrgent = document.getElementById("count-urgent");
 
-  // Show Toast Message
-  let toastTimer = null;
-  function showToast(message, isError = false) {
-    if (toastTimer) clearTimeout(toastTimer);
-    toast.textContent = message;
-    toast.className = isError ? "toast active error" : "toast active";
-    toastTimer = setTimeout(() => {
-      toast.className = "toast";
-    }, 3500);
-  }
-
-  // Format Timestamps cleanly
+  // Format Timestamps
   function formatDate(isoString) {
     try {
       const d = new Date(isoString);
@@ -79,66 +39,19 @@
     }
   }
 
-  // Verify Admin Key with API
-  async function checkAdminStatus(key) {
-    if (!key) {
-      setAdminState(false);
-      return;
-    }
-    try {
-      const res = await fetch("/api/auth/verify", {
-        headers: { "X-Admin-Key": key },
-      });
-      if (res.ok) {
-        state.adminKey = key;
-        localStorage.setItem("bulletin_admin_key", key);
-        setAdminState(true);
-      } else {
-        setAdminState(false);
-        if (state.adminKey) {
-          localStorage.removeItem("bulletin_admin_key");
-          state.adminKey = "";
-        }
-      }
-    } catch (err) {
-      console.error("Auth check failed:", err);
-      setAdminState(false);
-    }
-  }
-
-  // Update UI based on Admin State
-  function setAdminState(isAdmin) {
-    state.isAdmin = isAdmin;
-    if (isAdmin) {
-      adminStatusText.textContent = "ADMIN ACTIVE";
-      adminToggleBtn.classList.remove("btn-secondary");
-      adminToggleBtn.classList.add("btn-primary");
-      createNoticeBtn.style.display = "inline-flex";
-      adminLogoutBtn.style.display = "inline-block";
-    } else {
-      adminStatusText.textContent = "ADMIN ACCESS";
-      adminToggleBtn.classList.remove("btn-primary");
-      adminToggleBtn.classList.add("btn-secondary");
-      createNoticeBtn.style.display = "none";
-      adminLogoutBtn.style.display = "none";
-    }
-    renderBoard();
-  }
-
-  // Fetch notices from FastAPI
+  // Fetch notices from API
   async function fetchNotices() {
     try {
       const params = new URLSearchParams();
       if (state.search) params.append("search", state.search);
 
       const res = await fetch(`/api/notices?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load notices from server");
+      if (!res.ok) throw new Error("Failed to load notices");
       state.notices = await res.json();
       updateCounters();
       renderBoard();
     } catch (err) {
-      console.error("Fetch error:", err);
-      showToast("Cannot connect to server. Check database configuration.", true);
+      console.error("Notice fetch error:", err);
     }
   }
 
@@ -162,7 +75,7 @@
     return list;
   }
 
-  // Construct Safe Notice DOM Node (prevents XSS vulnerabilities)
+  // Construct Safe Notice DOM Node (prevents XSS)
   function createNoticeCardElement(notice) {
     const card = document.createElement("article");
     card.className = "notice-card";
@@ -223,34 +136,8 @@
 
     const authorSpan = document.createElement("span");
     authorSpan.className = "card-author";
-    authorSpan.textContent = `BY: ${notice.author || "Administration"}`;
+    authorSpan.textContent = `POSTED BY: ${notice.author || "Staff"}`;
     cardFooter.appendChild(authorSpan);
-
-    // Admin Controls
-    if (state.isAdmin) {
-      const actionsGroup = document.createElement("div");
-      actionsGroup.className = "card-actions";
-
-      const pinBtn = document.createElement("button");
-      pinBtn.className = "btn-card";
-      pinBtn.textContent = notice.is_pinned ? "UNPIN" : "PIN";
-      pinBtn.addEventListener("click", () => togglePinNotice(notice));
-
-      const editBtn = document.createElement("button");
-      editBtn.className = "btn-card";
-      editBtn.textContent = "EDIT";
-      editBtn.addEventListener("click", () => openEditModal(notice));
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "btn-card";
-      deleteBtn.textContent = "DELETE";
-      deleteBtn.addEventListener("click", () => deleteNotice(notice.id));
-
-      actionsGroup.appendChild(pinBtn);
-      actionsGroup.appendChild(editBtn);
-      actionsGroup.appendChild(deleteBtn);
-      cardFooter.appendChild(actionsGroup);
-    }
 
     card.appendChild(cardHeader);
     card.appendChild(cardBody);
@@ -275,156 +162,7 @@
     }
   }
 
-  // Open Create Modal
-  function openCreateModal() {
-    if (!state.isAdmin) {
-      openAdminModal();
-      return;
-    }
-    state.editingNoticeId = null;
-    noticeModalTitle.textContent = "NEW NOTICE";
-    noticeForm.reset();
-    noticeIdInput.value = "";
-    noticePriorityInput.value = "normal";
-    noticeCategoryInput.value = "General";
-    noticeAuthorInput.value = "Administration";
-    noticePinnedInput.checked = false;
-    noticeModal.style.display = "flex";
-    noticeTitleInput.focus();
-  }
-
-  // Open Edit Modal
-  function openEditModal(notice) {
-    state.editingNoticeId = notice.id;
-    noticeModalTitle.textContent = "EDIT NOTICE";
-    noticeIdInput.value = notice.id;
-    noticeTitleInput.value = notice.title;
-    noticeCategoryInput.value = notice.category || "General";
-    noticePriorityInput.value = notice.priority || "normal";
-    noticeAuthorInput.value = notice.author || "Administration";
-    noticePinnedInput.checked = Boolean(notice.is_pinned);
-    noticeContentInput.value = notice.content;
-    noticeModal.style.display = "flex";
-    noticeTitleInput.focus();
-  }
-
-  // Save notice (Create or Update)
-  async function handleNoticeSubmit(e) {
-    e.preventDefault();
-    const payload = {
-      title: noticeTitleInput.value.trim(),
-      content: noticeContentInput.value.trim(),
-      category: noticeCategoryInput.value.trim() || "General",
-      priority: noticePriorityInput.value,
-      is_pinned: noticePinnedInput.checked,
-      author: noticeAuthorInput.value.trim() || "Administration",
-    };
-
-    const isEdit = Boolean(state.editingNoticeId);
-    const url = isEdit ? `/api/notices/${state.editingNoticeId}` : "/api/notices";
-    const method = isEdit ? "PUT" : "POST";
-
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Key": state.adminKey,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Server rejected request.");
-      }
-
-      noticeModal.style.display = "none";
-      showToast(isEdit ? "Notice updated successfully." : "Notice published successfully.");
-      await fetchNotices();
-    } catch (err) {
-      showToast(err.message, true);
-    }
-  }
-
-  // Toggle Pinned Status
-  async function togglePinNotice(notice) {
-    try {
-      const res = await fetch(`/api/notices/${notice.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Admin-Key": state.adminKey,
-        },
-        body: JSON.stringify({ is_pinned: !notice.is_pinned }),
-      });
-
-      if (!res.ok) throw new Error("Failed to toggle pin status");
-      showToast(notice.is_pinned ? "Notice unpinned." : "Notice pinned.");
-      await fetchNotices();
-    } catch (err) {
-      showToast(err.message, true);
-    }
-  }
-
-  // Delete Notice
-  async function deleteNotice(noticeId) {
-    if (!confirm("Are you sure you want to permanently delete this notice?")) return;
-
-    try {
-      const res = await fetch(`/api/notices/${noticeId}`, {
-        method: "DELETE",
-        headers: { "X-Admin-Key": state.adminKey },
-      });
-
-      if (!res.ok) throw new Error("Failed to delete notice");
-      showToast("Notice deleted.");
-      await fetchNotices();
-    } catch (err) {
-      showToast(err.message, true);
-    }
-  }
-
-  // Admin Modal Handlers
-  function openAdminModal() {
-    adminKeyInput.value = state.adminKey || "";
-    adminModal.style.display = "flex";
-    adminKeyInput.focus();
-  }
-
-  async function handleAdminAuthSubmit() {
-    const key = adminKeyInput.value.trim();
-    if (!key) {
-      showToast("Please enter an administrative key.", true);
-      return;
-    }
-    try {
-      const res = await fetch("/api/auth/verify", {
-        headers: { "X-Admin-Key": key },
-      });
-      if (res.ok) {
-        state.adminKey = key;
-        localStorage.setItem("bulletin_admin_key", key);
-        setAdminState(true);
-        adminModal.style.display = "none";
-        showToast("Admin credentials verified.");
-      } else {
-        showToast("Invalid administrative passkey.", true);
-      }
-    } catch (err) {
-      showToast("Verification failed. Check network or server.", true);
-    }
-  }
-
-  function handleAdminLogout() {
-    state.adminKey = "";
-    localStorage.removeItem("bulletin_admin_key");
-    setAdminState(false);
-    adminModal.style.display = "none";
-    showToast("Admin passkey cleared.");
-  }
-
-  // Event Listeners
+  // Filter Tabs Event
   filterTabs.addEventListener("click", (e) => {
     const tab = e.target.closest(".tab");
     if (!tab) return;
@@ -434,6 +172,7 @@
     renderBoard();
   });
 
+  // Search Event
   let searchTimeout = null;
   searchInput.addEventListener("input", (e) => {
     const val = e.target.value;
@@ -452,29 +191,6 @@
     fetchNotices();
   });
 
-  adminToggleBtn.addEventListener("click", openAdminModal);
-  adminModalClose.addEventListener("click", () => (adminModal.style.display = "none"));
-  adminSubmitBtn.addEventListener("click", handleAdminAuthSubmit);
-  adminLogoutBtn.addEventListener("click", handleAdminLogout);
-  adminKeyInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") handleAdminAuthSubmit();
-  });
-
-  createNoticeBtn.addEventListener("click", openCreateModal);
-  emptyCreateBtn.addEventListener("click", openCreateModal);
-  noticeModalClose.addEventListener("click", () => (noticeModal.style.display = "none"));
-  noticeCancelBtn.addEventListener("click", () => (noticeModal.style.display = "none"));
-  noticeForm.addEventListener("submit", handleNoticeSubmit);
-
-  // Close modals on clicking backdrop
-  window.addEventListener("click", (e) => {
-    if (e.target === adminModal) adminModal.style.display = "none";
-    if (e.target === noticeModal) noticeModal.style.display = "none";
-  });
-
-  // Initialization
-  if (state.adminKey) {
-    checkAdminStatus(state.adminKey);
-  }
+  // Initial load
   fetchNotices();
 })();

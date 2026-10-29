@@ -3,7 +3,6 @@
 # Overview: Centralizes application configuration and environment variables.
 # ==============================================================================
 
-import os
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,7 +17,6 @@ class Settings(BaseSettings):
     )
 
     APP_NAME: str = "Monochrome Notice Board"
-    APP_ENV: str = "production"
     PORT: int = Field(default=8000, alias="PORT")
     HOST: str = "0.0.0.0"
 
@@ -29,12 +27,6 @@ class Settings(BaseSettings):
     )
     DATABASE_NAME: str = "bulletin_board"
     COLLECTION_NAME: str = "notices"
-
-    # Admin key for creating, editing, and deleting notices
-    ADMIN_API_KEY: str = Field(
-        default="admin-change-this-secret",
-        description="Administrative secret key for mutating notice endpoints",
-    )
 
     # CORS origins
     CORS_ORIGINS: list[str] = ["*"]

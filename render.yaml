@@ -15,5 +15,3 @@ services:
         value: bulletin_board
       - key: COLLECTION_NAME
         value: notices
-      - key: ADMIN_API_KEY
-        generateValue: true
