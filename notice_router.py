@@ -16,12 +16,17 @@ async def get_notices_endpoint(
     category: Optional[str] = Query(None, description="Filter by category"),
     priority: Optional[str] = Query(None, description="Filter by priority (normal, urgent)"),
     search: Optional[str] = Query(None, description="Search term for title or content"),
+    sort_by: Optional[str] = Query(
+        "default",
+        description="Sort order: default (pinned first), newest, oldest, title_asc, title_desc, priority",
+    ),
 ) -> List[NoticeResponse]:
-    """Retrieve all notices from the database matching optional query filters."""
+    """Retrieve all notices from the database matching optional query filters and order."""
     return await notice_service.fetch_notices(
         category=category,
         priority=priority,
         search=search,
+        sort_by=sort_by,
     )
 
 

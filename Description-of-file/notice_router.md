@@ -7,7 +7,7 @@ Declares public read-only HTTP route definitions for the Thaidramahistory REST A
 - `router: APIRouter`: Configured FastAPI router under prefix `/api`.
 - `get_notices_endpoint(...) -> list[NoticeResponse]`
   - **Route**: `GET /api/notices`
-  - **Description**: Returns all public notices matching optional query parameters (`category`, `priority`, `search`).
+  - **Description**: Returns all public notices matching optional query parameters (`category`, `priority`, `search`, `sort_by`).
 - `get_single_notice_endpoint(notice_id: str) -> NoticeResponse`
   - **Route**: `GET /api/notices/{notice_id}`
   - **Description**: Returns details for a single notice by ID.

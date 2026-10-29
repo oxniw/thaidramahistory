@@ -185,10 +185,36 @@ body {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .search-box {
   flex: 1;
+  min-width: 200px;
+}
+
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sort-box label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sort-box select {
+  background: #ffffff;
+  border: var(--border-width) solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
 }
 
 .search-box input {

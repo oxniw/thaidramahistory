@@ -9,9 +9,9 @@ from fastapi import HTTPException, status
 from program import repository
 
 
-async def get_all_notices() -> List[Dict[str, Any]]:
-    """Return all notices sorted with pinned items first."""
-    return await repository.list_records()
+async def get_all_notices(sort_by: str = "default") -> List[Dict[str, Any]]:
+    """Return all notices sorted by specified order."""
+    return await repository.list_records(sort_by=sort_by)
 
 
 async def add_notice(payload: Dict[str, Any]) -> Dict[str, Any]:

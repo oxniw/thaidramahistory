@@ -87,16 +87,41 @@ def _serialize(doc: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     return data
 
 
-async def list_records() -> List[Dict[str, Any]]:
-    """Retrieve all notices ordered by pinned status and timestamp."""
+async def list_records(sort_by: Optional[str] = "default") -> List[Dict[str, Any]]:
+    """Retrieve all notices ordered by chosen sort mode."""
+    sort_mode = (sort_by or "default").lower()
+
     if not _is_connected:
         _init_local_store()
         results = list(_local_store)
-        results.sort(key=lambda x: (not x.get("is_pinned", False), x.get("created_at")), reverse=False)
+        if sort_mode == "newest":
+            results.sort(key=lambda x: x.get("created_at"), reverse=True)
+        elif sort_mode == "oldest":
+            results.sort(key=lambda x: x.get("created_at"), reverse=False)
+        elif sort_mode == "title_asc":
+            results.sort(key=lambda x: x.get("title", "").lower(), reverse=False)
+        elif sort_mode == "title_desc":
+            results.sort(key=lambda x: x.get("title", "").lower(), reverse=True)
+        elif sort_mode == "category":
+            results.sort(key=lambda x: x.get("category", "").lower(), reverse=False)
+        elif sort_mode == "priority":
+            results.sort(key=lambda x: (x.get("priority") != "urgent", not x.get("is_pinned", False)), reverse=False)
+        else:
+            results.sort(key=lambda x: (not x.get("is_pinned", False), x.get("created_at")), reverse=False)
         return results
 
     coll = _db[settings.COLLECTION_NAME]
-    cursor = coll.find({}).sort([("is_pinned", -1), ("created_at", -1)])
+    sort_specs = {
+        "newest": [("created_at", -1)],
+        "oldest": [("created_at", 1)],
+        "title_asc": [("title", 1)],
+        "title_desc": [("title", -1)],
+        "category": [("category", 1), ("title", 1)],
+        "priority": [("priority", -1), ("is_pinned", -1), ("created_at", -1)],
+    }
+    mongo_sort = sort_specs.get(sort_mode, [("is_pinned", -1), ("created_at", -1)])
+
+    cursor = coll.find({}).sort(mongo_sort)
     docs = await cursor.to_list(length=1000)
     return [_serialize(doc) for doc in docs if doc is not None]
 

@@ -58,8 +58,11 @@ async def list_notices(
     category: Optional[str] = None,
     priority: Optional[str] = None,
     search: Optional[str] = None,
+    sort_by: Optional[str] = "default",
 ) -> List[Dict[str, Any]]:
-    """Query notices with optional filters and convert _id to id."""
+    """Query notices with optional filters and custom sorting order."""
+    sort_mode = (sort_by or "default").lower()
+
     if not is_mongo_connected():
         _init_local_store()
         results = list(_local_store)
@@ -73,7 +76,21 @@ async def list_notices(
                 n for n in results
                 if s in n.get("title", "").lower() or s in n.get("content", "").lower() or s in n.get("author", "").lower()
             ]
-        results.sort(key=lambda x: (not x.get("is_pinned", False), x.get("created_at")), reverse=False)
+
+        # In-memory sorting fallback
+        if sort_mode == "newest":
+            results.sort(key=lambda x: x.get("created_at"), reverse=True)
+        elif sort_mode == "oldest":
+            results.sort(key=lambda x: x.get("created_at"), reverse=False)
+        elif sort_mode == "title_asc":
+            results.sort(key=lambda x: x.get("title", "").lower(), reverse=False)
+        elif sort_mode == "title_desc":
+            results.sort(key=lambda x: x.get("title", "").lower(), reverse=True)
+        elif sort_mode == "priority":
+            results.sort(key=lambda x: (x.get("priority") != "urgent", not x.get("is_pinned", False), x.get("created_at")), reverse=False)
+        else:  # default: pinned first, newest first
+            results.sort(key=lambda x: (not x.get("is_pinned", False), x.get("created_at")), reverse=False)
+
         return results
 
     collection = get_collection()
@@ -93,8 +110,17 @@ async def list_notices(
             {"author": {"$regex": escaped_search, "$options": "i"}},
         ]
 
-    # Sort pinned items first, then descending by creation date
-    cursor = collection.find(query).sort([("is_pinned", -1), ("created_at", -1)])
+    # Map sort mode to MongoDB sort specification
+    sort_specs = {
+        "newest": [("created_at", -1)],
+        "oldest": [("created_at", 1)],
+        "title_asc": [("title", 1)],
+        "title_desc": [("title", -1)],
+        "priority": [("priority", -1), ("is_pinned", -1), ("created_at", -1)],
+    }
+    mongo_sort = sort_specs.get(sort_mode, [("is_pinned", -1), ("created_at", -1)])
+
+    cursor = collection.find(query).sort(mongo_sort)
     docs = await cursor.to_list(length=500)
     return [_serialize_document(doc) for doc in docs if doc is not None]
 

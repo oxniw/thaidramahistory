@@ -4,9 +4,9 @@
 Coordinates business domain retrieval rules and formats notices for public presentation.
 
 ## Exports & Functions
-- `fetch_notices(category: str | None = None, priority: str | None = None, search: str | None = None) -> list[NoticeResponse]`
-  - **Description**: Retrieves and sorts notices from the repository according to board display rules.
-  - **Parameters**: Optional filter criteria.
+- `fetch_notices(category: str | None = None, priority: str | None = None, search: str | None = None, sort_by: str | None = "default") -> list[NoticeResponse]`
+  - **Description**: Retrieves and sorts notices from the repository according to chosen sort order (`default`, `newest`, `oldest`, `title_asc`, `title_desc`, `priority`).
+  - **Parameters**: Optional filter and sorting criteria.
   - **Returns**: List of validated `NoticeResponse` objects.
 - `fetch_notice(notice_id: str) -> NoticeResponse`
   - **Description**: Retrieves a single notice by ID or raises HTTP 404 if not found.

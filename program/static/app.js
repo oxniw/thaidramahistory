@@ -8,12 +8,14 @@
 
   let records = [];
   let editingId = null;
+  let currentSort = "default";
 
   // Elements
   const recordsTbody = document.getElementById("records-tbody");
   const recordCount = document.getElementById("record-count");
   const emptyState = document.getElementById("empty-state");
   const filterSearch = document.getElementById("filter-search");
+  const managerSortSelect = document.getElementById("manager-sort-select");
   const exportBtn = document.getElementById("export-btn");
   const importBtn = document.getElementById("import-btn");
   const importFileInput = document.getElementById("import-file-input");
@@ -56,7 +58,7 @@
   // Fetch all notices from manager API
   async function loadNotices() {
     try {
-      const res = await fetch("/api/notices");
+      const res = await fetch(`/api/notices?sort_by=${currentSort}`);
       if (!res.ok) throw new Error("Failed to load records from database.");
       records = await res.json();
       renderTable();
@@ -265,6 +267,12 @@
   resetBtn.addEventListener("click", resetForm);
   newRecordBtn.addEventListener("click", resetForm);
   filterSearch.addEventListener("input", renderTable);
+  if (managerSortSelect) {
+    managerSortSelect.addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      loadNotices();
+    });
+  }
   exportBtn.addEventListener("click", handleExport);
   importBtn.addEventListener("click", () => importFileInput.click());
   importFileInput.addEventListener("change", handleImportFile);

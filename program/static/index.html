@@ -38,6 +38,18 @@
         <div class="search-box">
           <input type="text" id="filter-search" placeholder="Filter by title, author, category..." autocomplete="off">
         </div>
+        <div class="sort-box">
+          <label for="manager-sort-select" class="sort-label">ORDER:</label>
+          <select id="manager-sort-select">
+            <option value="default">Default (Pinned)</option>
+            <option value="newest">Newest Date</option>
+            <option value="oldest">Oldest Date</option>
+            <option value="title_asc">Title (A-Z)</option>
+            <option value="title_desc">Title (Z-A)</option>
+            <option value="category">Category</option>
+            <option value="priority">Priority First</option>
+          </select>
+        </div>
         <div class="count-badge">
           TOTAL: <span id="record-count">0</span>
         </div>

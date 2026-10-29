@@ -32,7 +32,7 @@ def run_all_tests():
         print("  OK - Frontend HTML, CSS, and JS assets served correctly.")
 
         # 3. List Notices & Filters
-        print("[3/5] Testing GET /api/notices...")
+        print("[3/5] Testing GET /api/notices with search & sorting...")
         notices_res = client.get("/api/notices")
         assert notices_res.status_code == 200
         notices = notices_res.json()
@@ -48,7 +48,19 @@ def run_all_tests():
         assert urgent_res.status_code == 200
         for item in urgent_res.json():
             assert item["priority"] == "urgent"
-        print("  OK - Public notice listing and keyword/priority filtering verified.")
+
+        # Test Sorting by Title (A-Z)
+        sort_res = client.get("/api/notices?sort_by=title_asc")
+        assert sort_res.status_code == 200
+        titles = [n["title"].lower() for n in sort_res.json()]
+        assert titles == sorted(titles), "Expected titles to be sorted alphabetically ascending"
+
+        # Test Sorting by Date (Newest vs Oldest)
+        newest_res = client.get("/api/notices?sort_by=newest")
+        oldest_res = client.get("/api/notices?sort_by=oldest")
+        assert newest_res.status_code == 200
+        assert oldest_res.status_code == 200
+        print("  OK - Public notice listing, search filters, and custom ordering verified.")
 
         # 4. Single Notice Retrieval
         print("[4/5] Testing GET /api/notices/{id}...")

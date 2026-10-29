@@ -13,12 +13,14 @@ async def fetch_notices(
     category: Optional[str] = None,
     priority: Optional[str] = None,
     search: Optional[str] = None,
+    sort_by: Optional[str] = "default",
 ) -> List[NoticeResponse]:
     """Retrieve filtered and sorted notices from storage."""
     docs = await notice_repository.list_notices(
         category=category,
         priority=priority,
         search=search,
+        sort_by=sort_by,
     )
     return [NoticeResponse(**doc) for doc in docs]
 

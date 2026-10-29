@@ -11,6 +11,7 @@
     notices: [],
     filter: "all",
     search: "",
+    sortBy: "default",
   };
 
   // DOM Elements
@@ -19,6 +20,7 @@
   const searchInput = document.getElementById("search-input");
   const searchClearBtn = document.getElementById("search-clear-btn");
   const filterTabs = document.getElementById("filter-tabs");
+  const sortSelect = document.getElementById("sort-select");
 
   // Counters
   const countAll = document.getElementById("count-all");
@@ -44,6 +46,7 @@
     try {
       const params = new URLSearchParams();
       if (state.search) params.append("search", state.search);
+      if (state.sortBy) params.append("sort_by", state.sortBy);
 
       const res = await fetch(`/api/notices?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load notices");
@@ -190,6 +193,14 @@
     searchClearBtn.style.display = "none";
     fetchNotices();
   });
+
+  // Sort Select Event
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      state.sortBy = e.target.value;
+      fetchNotices();
+    });
+  }
 
   // Initial load
   fetchNotices();

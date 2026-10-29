@@ -12,9 +12,9 @@ router = APIRouter(prefix="/api", tags=["Manager"])
 
 
 @router.get("/notices", response_model=List[Dict[str, Any]])
-async def list_notices():
+async def list_notices(sort_by: str = "default"):
     """List all notices currently stored in the database."""
-    return await service.get_all_notices()
+    return await service.get_all_notices(sort_by=sort_by)
 
 
 @router.post("/notices", status_code=status.HTTP_201_CREATED)
