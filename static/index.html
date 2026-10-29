@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOTICE BOARD // MONOCHROME</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Notification Toast Banner -->
+  <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
+  <!-- Header Section -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-tag">SYS // ARCHIVE</span>
+        <h1 class="brand-title">NOTICE BOARD</h1>
+        <p class="brand-sub">Render &middot; MongoDB &middot; Fast, minimal, monochrome bulletin</p>
+      </div>
+      <div class="header-actions">
+        <button id="admin-toggle-btn" class="btn btn-secondary">
+          <span class="btn-icon">&#9632;</span>
+          <span id="admin-status-text">ADMIN UNLOCKED</span>
+        </button>
+        <button id="create-notice-btn" class="btn btn-primary" style="display: none;">
+          <span>+ NEW NOTICE</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Control & Filter Toolbar -->
+  <section class="toolbar-section">
+    <div class="toolbar-inner">
+      <div class="search-box">
+        <span class="search-label">SEARCH</span>
+        <input type="text" id="search-input" placeholder="Type keywords..." autocomplete="off">
+        <button id="search-clear-btn" class="btn-icon-inline" title="Clear search">&times;</button>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">FILTER:</span>
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="tab active" data-filter="all">ALL (<span id="count-all">0</span>)</button>
+          <button class="tab" data-filter="pinned">PINNED (<span id="count-pinned">0</span>)</button>
+          <button class="tab" data-filter="urgent">URGENT (<span id="count-urgent">0</span>)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <!-- Notice Board Grid -->
+    <div id="notices-grid" class="notices-grid">
+      <!-- Injected dynamically via app.js -->
+    </div>
+
+    <!-- Empty State Message -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <div class="empty-box">
+        <div class="empty-code">[ EMPTY BOARD ]</div>
+        <h2>No notices found.</h2>
+        <p>The database currently contains no notice records matching this view.</p>
+        <button id="empty-create-btn" class="btn btn-primary" style="display: inline-block;">
+          CREATE FIRST NOTICE
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>SYS STATUS: <span id="db-status" class="status-live">&#9679; CONNECTED</span></div>
+      <div>THEME: HIGH CONTRAST MONOCHROME</div>
+      <div>DEPLOYED FOR RENDER.COM</div>
+    </div>
+  </footer>
+
+  <!-- Admin Key Modal -->
+  <div id="admin-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>ADMIN ACCESS</h3>
+        <button class="modal-close" id="admin-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Enter the administrative passkey configured in <code>ADMIN_API_KEY</code> on your server.</p>
+        <div class="form-field">
+          <label for="admin-key-input">PASSKEY</label>
+          <input type="password" id="admin-key-input" placeholder="Enter administrative secret..." autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="admin-logout-btn" class="btn btn-secondary" style="display: none;">CLEAR KEY</button>
+        <button id="admin-submit-btn" class="btn btn-primary">AUTHENTICATE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Notice Modal -->
+  <div id="notice-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box modal-box-large">
+      <div class="modal-header">
+        <h3 id="notice-modal-title">NEW NOTICE</h3>
+        <button class="modal-close" id="notice-modal-close">&times;</button>
+      </div>
+      <form id="notice-form" class="modal-body">
+        <input type="hidden" id="notice-id">
+
+        <div class="form-field">
+          <label for="notice-title">TITLE *</label>
+          <input type="text" id="notice-title" required maxlength="150" placeholder="Notice title or headline">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="notice-category">CATEGORY</label>
+            <input type="text" id="notice-category" maxlength="50" placeholder="e.g. System, Security, Event" value="General">
+          </div>
+          <div class="form-field">
+            <label for="notice-priority">PRIORITY</label>
+            <select id="notice-priority">
+              <option value="normal">Normal</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="notice-author">AUTHOR / ISSUER</label>
+            <input type="text" id="notice-author" maxlength="60" placeholder="Department or issuer name" value="Administration">
+          </div>
+          <div class="form-field checkbox-field">
+            <label class="checkbox-container">
+              <input type="checkbox" id="notice-pinned">
+              <span class="checkbox-box"></span>
+              <span class="checkbox-label">PIN TO TOP</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="notice-content">CONTENT *</label>
+          <textarea id="notice-content" required rows="6" maxlength="5000" placeholder="Write notice details here..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="notice-cancel-btn">CANCEL</button>
+          <button type="submit" class="btn btn-primary" id="notice-save-btn">SAVE NOTICE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

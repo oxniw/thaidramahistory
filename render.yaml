@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: monochrome-notice-board
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: "/health"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: MONGODB_URI
+        sync: false
+      - key: DATABASE_NAME
+        value: bulletin_board
+      - key: COLLECTION_NAME
+        value: notices
+      - key: ADMIN_API_KEY
+        generateValue: true

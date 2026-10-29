@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Archive Launch: 1980-2020 Thai Drama Preservation Initiative",
+    "content": "We have digitized over 400 historical drama broadcast records, production stills, and script drafts. Researchers can now access chronological logs detailing the transition from analog terrestrial broadcasts to digital distribution.",
+    "category": "Archive",
+    "priority": "normal",
+    "is_pinned": true,
+    "author": "Archival Committee"
+  },
+  {
+    "title": "Restored 4K Master Broadcast: Si Phaendin (Four Dynasties)",
+    "content": "The National Film and Television Archive has concluded restoration work on the 1991 television master of Si Phaendin. A special retrospective screening and audio commentary stream is scheduled for this Friday at 19:00 UTC.",
+    "category": "Broadcast",
+    "priority": "urgent",
+    "is_pinned": true,
+    "author": "Programming Bureau"
+  },
+  {
+    "title": "Historical Research Notes: The Evolution of Ayutthaya Era Period Dramas",
+    "content": "A comparative analysis examining historical accuracy, costuming techniques, and dialogue patterns across four decades of Thai historical period television dramas has been indexed into the research database.",
+    "category": "Research",
+    "priority": "normal",
+    "is_pinned": false,
+    "author": "Drama History Dept"
+  },
+  {
+    "title": "Community Tape Drive: Seeking VHS and Betacam Broadcast Recordings (1985-1998)",
+    "content": "Our preservation catalog is currently missing clean audio tracks for select 1990s television dramas. If you possess physical tape recordings of historical television airings, please contact the preservation team.",
+    "category": "Community",
+    "priority": "normal",
+    "is_pinned": false,
+    "author": "Preservation Taskforce"
+  },
+  {
+    "title": "Database Maintenance: Indexing Production Credits and Broadcast Logs",
+    "content": "Engineers are updating database indexes across cast registries, original directors, and music composers. Query latencies for historical title lookups will decrease across all public endpoints.",
+    "category": "System",
+    "priority": "normal",
+    "is_pinned": false,
+    "author": "Operations Team"
+  }
+]
