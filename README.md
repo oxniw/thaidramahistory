@@ -30,8 +30,26 @@ thaidramahistory/
 │   ├── notice_router.md
 │   ├── frontend.md
 │   ├── seed.md
-│   └── test_suite.md
-├── static/                     # Frontend client assets
+│   ├── test_suite.md
+│   ├── program_main.md
+│   ├── program_config.md
+│   ├── program_repository.md
+│   ├── program_service.md
+│   ├── program_routes.md
+│   ├── program_frontend.md
+│   └── program_test.md
+├── program/                    # Local-only database management program
+│   ├── static/                 # Management split dashboard UI
+│   │   ├── index.html
+│   │   ├── styles.css
+│   │   └── app.js
+│   ├── config.py               # Localhost bind settings (127.0.0.1:8500)
+│   ├── repository.py           # MongoDB CRUD & backup/restore queries
+│   ├── service.py              # Business validation and JSON transformations
+│   ├── routes.py               # Manager API routes
+│   ├── test_program.py         # Automated test runner for manager
+│   └── main.py                 # Manager entry point
+├── static/                     # Public frontend client assets
 │   ├── index.html              # Monochrome brutalist layout
 │   ├── styles.css              # Black-and-white brutalist CSS
 │   └── app.js                  # Safe DOM controller & search/filter logic
@@ -41,9 +59,10 @@ thaidramahistory/
 ├── notice_repository.py        # MongoDB persistence seam with offline fallback
 ├── notice_service.py           # Domain business rules and sorting
 ├── notice_router.py            # Public read API routes
-├── main.py                     # Entry point orchestrating FastAPI app
+├── main.py                     # Entry point orchestrating public FastAPI app
 ├── seed.py                     # Standalone CLI seeder script
 ├── seed_data.json              # Initial notice dataset
+├── start_manager.bat           # Windows one-click launcher for manager
 ├── test_suite.py               # Automated integration test runner
 ├── render.yaml                 # Render.com Blueprint configuration
 ├── Procfile                    # Process file for Render web service
@@ -74,11 +93,30 @@ To populate an empty MongoDB collection with the example notices:
 python seed.py
 ```
 
-### 4. Start the Application
+### 4. Start the Public Website
 ```powershell
 uvicorn main:app --reload --port 8000
 ```
 Open **[http://localhost:8000](http://localhost:8000)** in your browser.
+
+---
+
+## Managing Database Records (Local Control Panel)
+
+To create, edit, delete, pin, import, or export records without exposing admin endpoints on the public website:
+
+### Option A: Windows Batch Launcher
+Double-click `start_manager.bat` in the project root.
+
+### Option B: Terminal Command
+```powershell
+python program/main.py
+```
+
+The portal automatically boots at **[http://127.0.0.1:8500](http://127.0.0.1:8500)** strictly bound to localhost:
+- **Left Pane**: Searchable records table with instant filter and inline action buttons (`EDIT`, `DEL`).
+- **Right Pane**: Live creation and editor form with category, priority, and pin toggles.
+- **Top Actions**: One-click **EXPORT JSON** backup download and **IMPORT JSON** restoration.
 
 ---
 

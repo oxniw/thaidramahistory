@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONTROL PANEL // THAIDRAMAHISTORY</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Header -->
+  <header class="panel-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-tag">LOCAL DATABASE MANAGER</span>
+        <h1 class="brand-title">THAIDRAMAHISTORY CONTROL</h1>
+        <p class="brand-sub">127.0.0.1:8500 &middot; Direct MongoDB collection management</p>
+      </div>
+      <div class="header-actions">
+        <button id="export-btn" class="btn btn-secondary">EXPORT JSON</button>
+        <button id="import-btn" class="btn btn-secondary">IMPORT JSON</button>
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+        <button id="new-record-btn" class="btn btn-primary">+ NEW NOTICE</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Split Workspace -->
+  <main class="split-container">
+    <!-- Left Pane: Records List -->
+    <section class="records-pane">
+      <div class="pane-header">
+        <div class="search-box">
+          <input type="text" id="filter-search" placeholder="Filter by title, author, category..." autocomplete="off">
+        </div>
+        <div class="count-badge">
+          TOTAL: <span id="record-count">0</span>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 85px;">TAGS</th>
+              <th>TITLE</th>
+              <th style="width: 100px;">CATEGORY</th>
+              <th style="width: 90px;">DATE</th>
+              <th style="width: 130px; text-align: right;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="records-tbody">
+            <!-- Dynamically populated via app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <p>No records found in database.</p>
+      </div>
+    </section>
+
+    <!-- Right Pane: Live Editor Form -->
+    <aside class="editor-pane">
+      <div class="editor-card">
+        <div class="editor-header">
+          <h2 id="editor-title">CREATE NOTICE</h2>
+          <span id="editor-mode-badge" class="mode-badge">NEW</span>
+        </div>
+
+        <form id="record-form">
+          <input type="hidden" id="form-id">
+
+          <div class="form-field">
+            <label for="form-title">TITLE *</label>
+            <input type="text" id="form-title" required maxlength="150" placeholder="Notice title or headline">
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="form-category">CATEGORY</label>
+              <input type="text" id="form-category" maxlength="50" placeholder="e.g. Archive, Broadcast" value="General">
+            </div>
+            <div class="form-field">
+              <label for="form-priority">PRIORITY</label>
+              <select id="form-priority">
+                <option value="normal">Normal</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="form-author">AUTHOR / ISSUER</label>
+              <input type="text" id="form-author" maxlength="60" placeholder="Staff or Department" value="Staff">
+            </div>
+            <div class="form-field checkbox-field">
+              <label class="checkbox-container">
+                <input type="checkbox" id="form-pinned">
+                <span class="checkbox-box"></span>
+                <span class="checkbox-label">PIN TO TOP</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="form-content">CONTENT *</label>
+            <textarea id="form-content" required rows="9" maxlength="5000" placeholder="Write notice details here..."></textarea>
+          </div>
+
+          <div class="editor-actions">
+            <button type="button" id="reset-btn" class="btn btn-secondary">RESET</button>
+            <button type="submit" id="save-btn" class="btn btn-primary">SAVE TO DATABASE</button>
+          </div>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
