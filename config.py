@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         default="mongodb://localhost:27017",
         description="MongoDB connection string (e.g. MongoDB Atlas or local URI)",
     )
-    DATABASE_NAME: str = "bulletin_board"
+    DATABASE_NAME: str = "thaidramahistory"
     COLLECTION_NAME: str = "notices"
 
     # CORS origins

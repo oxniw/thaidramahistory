@@ -34,7 +34,7 @@ class ProgramSettings(BaseSettings):
         default="mongodb://localhost:27017",
         description="MongoDB connection string (local or MongoDB Atlas)",
     )
-    DATABASE_NAME: str = "bulletin_board"
+    DATABASE_NAME: str = "thaidramahistory"
     COLLECTION_NAME: str = "notices"
 
 

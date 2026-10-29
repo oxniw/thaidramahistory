@@ -12,6 +12,6 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: DATABASE_NAME
-        value: bulletin_board
+        value: thaidramahistory
       - key: COLLECTION_NAME
         value: notices
