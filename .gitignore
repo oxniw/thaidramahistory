@@ -1,27 +1,65 @@
-# Environment variables & secrets
+# ==============================================================================
+# Environment & Secrets (Never commit credentials)
+# ==============================================================================
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
-# Python cache & virtual environments
+# ==============================================================================
+# Python Cache & Virtual Environments
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
+
+# Virtual environments
 venv/
+.venv/
+env/
 ENV/
 env.bak/
 venv.bak/
 
-# IDE & OS metadata
+# Packaging & Distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ==============================================================================
+# Testing & Code Analysis
+# ==============================================================================
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ==============================================================================
+# Database Backups & Temporary Exports
+# (Preserves seed_data.json for repo bootstrap)
+# ==============================================================================
+*backup*.json
+*.dump
+*.sql
+*.sqlite3
+
+# ==============================================================================
+# Operating System & IDE Metadata
+# ==============================================================================
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
 
-# Logs
+# ==============================================================================
+# Logs & Process Output
+# ==============================================================================
 *.log
